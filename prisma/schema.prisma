@@ -1,0 +1,92 @@
+model User {
+  id                String   @id @default(uuid())
+  name              String
+  email             String   @unique
+  password_hash     String
+  phone             String?
+  type              String    // 'candidate', 'company', 'admin'
+  profile_picture   String?
+  is_active         Boolean  @default(true)
+  created_at        DateTime @default(now())
+  updated_at        DateTime?
+  
+  createdBy         String
+  updatedBy         String?
+
+  // Relacionamentos
+  company           Company? // Relacionamento opcional com a empresa
+  candidateProfile  CandidateProfile? // Relacionamento opcional com o perfil do candidato
+
+  jobOffersCreated  JobOffer[] @relation("JobOfferCreatedBy")
+  jobOffersUpdated  JobOffer[] @relation("JobOfferUpdatedBy")
+  applications      JobApplication[]
+}
+
+model Company {
+  userId            String   @id
+  companyName       String
+  cnpj              String?  
+  website           String?  
+  companySize       String?  
+  description       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime?
+  createdBy         String
+  updatedBy         String?
+
+  user              User     @relation(fields: [userId], references: [id])
+}
+
+model CandidateProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  summary           String?
+  experience        Json?
+  education         Json?
+  languages         Json // Lista de idiomas
+  linkedin          String?
+  github            String?
+  imported_from     String?
+
+  user              User     @relation(fields: [userId], references: [id])
+  
+  skills            Skill[]  // Relacionamento com o modelo de habilidades (muitos-para-muitos)
+}
+
+model Skill {
+  id            String   @id @default(uuid()) // ID da habilidade
+  name          String   // Nome da habilidade, ex: "JavaScript"
+  candidateProfileId String
+
+  candidateProfile CandidateProfile @relation(fields: [candidateProfileId], references: [id]) // Relacionamento com o perfil do candidato
+}
+
+model JobOffer {
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  requirements  String
+  location      String
+  department    String
+  created_at    DateTime @default(now())
+  is_active     Boolean  @default(true)
+
+  // Relacionamentos com o usuário (quem criou e atualizou a vaga)
+  createdBy     String
+  updatedBy     String?
+
+  createdByUser User     @relation("JobOfferCreatedBy", fields: [createdBy], references: [id]) // Quem criou a vaga
+  updatedByUser User?    @relation("JobOfferUpdatedBy", fields: [updatedBy], references: [id]) // Quem atualizou a vaga
+
+  applications  JobApplication[]
+}
+
+model JobApplication {
+  id           String   @id @default(uuid())
+  candidate_id String
+  job_id       String
+  applied_at   DateTime @default(now())
+
+  candidate    User     @relation(fields: [candidate_id], references: [id]) // Candidato que aplicou
+  job_offer    JobOffer @relation(fields: [job_id], references: [id]) // Vaga para qual o candidato aplicou
+}
