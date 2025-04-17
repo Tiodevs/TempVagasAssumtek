@@ -1,17 +1,17 @@
-import { hash, genSalt } from 'bcryptjs'
+import { hash } from 'bcryptjs'
 import prismaClient from "../../prisma"
 
-interface CandidateRequest {
+interface UserRequest {
   name: string
   email: string
   password: string
   phone: string
-  city: string
-  state: string
+  type: string
+  createdBy: string
 }
 
-class CreateCandidateService {
-  async execute({ name, email, password, phone, city, state }: CandidateRequest) {
+class CreateUserService {
+  async execute({ name, email, password, phone, type, createdBy }: UserRequest) {
 
     try {
       // Validação de campos
@@ -27,11 +27,11 @@ class CreateCandidateService {
       if (!phone) {
         throw new Error("Número não informado");
       }
-      if (!city) {
-        throw new Error("Cidade não informada");
+      if (!type) {
+        throw new Error("Tipo de usuário não informado");
       }
-      if (!state) {
-        throw new Error("Estado não informado");
+      if (!createdBy) {
+        throw new Error("Campo createdBy não informado");
       }
 
       // Expressão regular que verifica se é email
@@ -40,46 +40,46 @@ class CreateCandidateService {
         throw new Error("Email inválido");
       }
 
-
-      // Verifica se já existe o use com o email
-      const candidateExists = await prismaClient.candidate.findFirst({
+      // Verifica se já existe o usuário com o email
+      const userExists = await prismaClient.user.findFirst({
         where: {
           email: email
         }
       })
 
-      if (candidateExists) {
-        throw new Error("Candidato já cadastrado")
+      if (userExists) {
+        throw new Error("Usuário já cadastrado")
       }
 
       // Cria a criptografia da senha
       const hashedPassword = await hash(password, 10)
 
-      // Cria o user
-      const user = await prismaClient.candidate.create({
+      // Cria o usuário
+      const user = await prismaClient.user.create({
         data: {
           name,
           email,
           password_hash: hashedPassword,
           phone,
-          city,
-          state,
+          type, // 'candidate', 'company', 'admin'
+          is_active: true,
+          createdBy
         },
         select: {
           name: true,
           email: true,
-          id: true
+          id: true,
+          type: true
         }
       })
 
       return user
 
     } catch (error:any) {
-
-      console.error("Erro ao criar candidato:", error.message);
-      throw new Error(error.message || "Erro interno ao criar o candidato");
+      console.error("Erro ao criar usuário:", error.message);
+      throw new Error(error.message || "Erro interno ao criar o usuário");
     }
   }
 }
 
-export { CreateCandidateService }
+export { CreateUserService } 

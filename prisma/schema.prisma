@@ -1,3 +1,14 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
 model User {
   id                String   @id @default(uuid())
   name              String
@@ -90,3 +101,6 @@ model JobApplication {
   candidate    User     @relation(fields: [candidate_id], references: [id]) // Candidato que aplicou
   job_offer    JobOffer @relation(fields: [job_id], references: [id]) // Vaga para qual o candidato aplicou
 }
+
+// npx prisma generate
+// npx prisma migrate dev --name changeToUser

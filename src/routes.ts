@@ -5,7 +5,7 @@ import { isAuthenticated } from './middlewares/isAuthenticated'
 
 // Controllers
 // Auth
-import { AuthCandidateController, CreateCandidateController, DeleteCandidateController, DetailCandidateController, EditCandidateController } from './controllers/userController'
+import { AuthUserController, CreateUserController, DeleteUserController, DetailUserController, EditUserController } from './controllers/userController'
 
 // ProfileUser
 import { CreateProfileController } from './controllers/profileContoller'
@@ -17,7 +17,7 @@ import { CreateJobApplicationController, ListBycandidateJobController } from './
 import { CreateJobController, ListJobController } from './controllers/jobController'
 
 // ADM e dashboard
-import { DetalisByIdCandidateController, ListAllCandidadeController } from './controllers/admController'
+import { DetailsByIdUserController, ListAllCandidateController } from './controllers/admController'
 
 const router = Router()
 
@@ -29,17 +29,17 @@ router.get('/', (req: Request, res: Response) => {
   `)
 })
 
-// AUTH CANDIDATE //
-router.post('/auth/signup', new CreateCandidateController().handle) // Cria um novo usuario
-router.post('/auth/login', new AuthCandidateController().handle) // Faz a autenticação de login do usuario
-router.get('/auth/me', isAuthenticated, new DetailCandidateController().handle) // Pega os detalhes do usuario logado
-router.put('/auth/me/update', isAuthenticated, new EditCandidateController().handle) // Edita o usuario autenticado
+// AUTH USER //
+router.post('/auth/signup', new CreateUserController().handle) // Cria um novo usuario
+router.post('/auth/login', new AuthUserController().handle) // Faz a autenticação de login do usuario
+router.get('/auth/me', isAuthenticated, new DetailUserController().handle) // Pega os detalhes do usuario logado
+router.put('/auth/me/update', isAuthenticated, new EditUserController().handle) // Edita o usuario autenticado
 
 
 // ADM // 
-router.put('/admin/candidates/deactivate/:id', isAuthenticated, new DeleteCandidateController().handle) // Desativa o usuário por id
-router.get('/admin/candidates/list', isAuthenticated, new ListAllCandidadeController().handle) // Lista todos os candidatos
-router.get('/admin/candidates/:id', isAuthenticated, new DetalisByIdCandidateController().handle) // Detalhes de um candidato por id
+router.put('/admin/users/deactivate/:id', isAuthenticated, new DeleteUserController().handle) // Desativa o usuário por id
+router.get('/admin/users/list', isAuthenticated, new ListAllCandidateController().handle) // Lista todos os candidatos
+router.get('/admin/users/:id', isAuthenticated, new DetailsByIdUserController().handle) // Detalhes de um usuário por id
 
 
 // CANDIDATE PROFILE //
@@ -57,7 +57,7 @@ router.post('/profile/import/linkedin', isAuthenticated, () => {}) // Importa Li
 // VAGAS //
 router.post('/jobs/create', isAuthenticated, new CreateJobController().handle) // Cria uma nova vaga
 router.get('/jobs/list', isAuthenticated, new ListJobController().handle) // Lista todas as vagas
-router.get('/jobs/list/:id', isAuthenticated, new DetailCandidateController().handle) // Detalhes de uma vaga por id
+router.get('/jobs/list/:id', isAuthenticated, new DetailUserController().handle) // Detalhes de uma vaga por id
 router.delete('/jobs/delete/:id', isAuthenticated, () =>{}) // Deleta uma vaga
 router.put('/jobs/update/:id', isAuthenticated, () =>{}) // Editar uma vaga
 

@@ -6,10 +6,11 @@ interface JobRequest {
   requirements: string
   location: string
   department: string
+  createdBy: string
 }
 
 class CreateJobService {
-  async execute({ title, description, requirements, location, department }: JobRequest) {
+  async execute({ title, description, requirements, location, department, createdBy }: JobRequest) {
 
     try {
       // Validação de campos
@@ -28,24 +29,28 @@ class CreateJobService {
       if (!department) {
         throw new Error("department não informada");
       }
+      if (!createdBy) {
+        throw new Error("createdBy não informado");
+      }
 
-      // Cria o user
+      // Cria a vaga
       const job = await prismaClient.jobOffer.create({
         data: {
           title, 
           description, 
           requirements, 
           location, 
-          department
+          department,
+          createdBy,
+          is_active: true
         }
       })
 
       return job
 
     } catch (error:any) {
-
-      console.error("Erro ao criar job:", error.message);
-      throw new Error(error.message || "Erro interno ao criar o candidato");
+      console.error("Erro ao criar vaga:", error.message);
+      throw new Error(error.message || "Erro interno ao criar a vaga");
     }
   }
 }

@@ -1,23 +1,22 @@
 import { Request, Response } from "express"
-import { DetalisByIdCandidateService } from "../services/adm/DetalisByIdCandidateService";
-import { ListAllCandidadeService } from "../services/adm/ListAllCandidadeService";
+import { DetailsByIdUserService } from "../services/adm/DetailsByIdUserService";
+import { ListAllCandidateService } from "../services/adm/ListAllCandidateService";
 
-export class DetalisByIdCandidateController {
+export class DetailsByIdUserController {
     async handle(req: Request, res: Response) {
         
         try {
-
             const { id } = req.params
 
             // Cria uma instancia do service
-            const detalisCandidateService = new DetalisByIdCandidateService();
+            const detailsUserService = new DetailsByIdUserService();
 
             //  Chama o metodo execute do service que foi instanciado e passa os dados do body
-            const detalisCandidate = await detalisCandidateService.execute({ id });
-            return res.json(detalisCandidate);
+            const userDetails = await detailsUserService.execute({ id });
+            return res.json(userDetails);
 
         } catch (error: any) {
-            console.error("Erro ao Pegar datalhes do candidado:", error.message, error.stack);
+            console.error("Erro ao buscar detalhes do usuário:", error.message, error.stack);
             return res.status(500).json({
                 status: "error",
                 message: error.message || "Erro interno no servidor."
@@ -26,22 +25,22 @@ export class DetalisByIdCandidateController {
     }
 }
 
-export class ListAllCandidadeController {
+export class ListAllCandidateController {
     async handle(req: Request, res: Response) {
         try {
-            console.log("Iniciando listagem de Candidatos");
+            console.log("Iniciando listagem de candidatos");
 
             // Cria uma instancia do service
-            const listAllCandidadeervice = new ListAllCandidadeService();
+            const listAllCandidateService = new ListAllCandidateService();
 
-            //  Chama o metodo execute do service que foi instanciado e passa os dados do body
-            const listAllcCandidates = await listAllCandidadeervice.execute();
+            //  Chama o metodo execute do service que foi instanciado
+            const candidates = await listAllCandidateService.execute();
             
             console.log("Candidatos listados com sucesso");
-            return res.json(listAllcCandidates);
+            return res.json(candidates);
 
         } catch (error: any) {
-            console.error("Erro ao listar Candidatos:", error.message, error.stack);
+            console.error("Erro ao listar candidatos:", error.message, error.stack);
             return res.status(500).json({
                 status: "error",
                 message: error.message || "Erro interno no servidor."

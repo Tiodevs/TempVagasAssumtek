@@ -6,7 +6,10 @@ import { ListJobService } from "../services/job/ListJobService";
 export class CreateJobController {
     async handle(req: Request, res: Response) {
         try {
-            console.log("Iniciando criação de job");
+            console.log("Iniciando criação de vaga");
+
+            // Pega o ID do usuário autenticado
+            const createdBy = req.user_id;
 
             // Pega as informações do body
             const { title, description, requirements, location, department } = req.body;
@@ -15,9 +18,16 @@ export class CreateJobController {
             const createJobService = new CreateJobService();
 
             //  Chama o metodo execute do service que foi instanciado e passa os dados do body
-            const job = await createJobService.execute({ title, description, requirements, location, department });
+            const job = await createJobService.execute({ 
+                title, 
+                description, 
+                requirements, 
+                location, 
+                department, 
+                createdBy 
+            });
             
-            console.log("Vaga criado com sucesso:", job);
+            console.log("Vaga criada com sucesso:", job);
             return res.json(job);
 
         } catch (error: any) {
@@ -61,19 +71,19 @@ export class DetailsJobController {
 export class ListJobController {
     async handle(req: Request, res: Response) {
         try {
-            console.log("Iniciando listagem de job");
+            console.log("Iniciando listagem de vagas");
 
             // Cria uma instancia do service
             const listJobService = new ListJobService();
 
-            //  Chama o metodo execute do service que foi instanciado e passa os dados do body
+            //  Chama o metodo execute do service que foi instanciado
             const listJob = await listJobService.execute();
             
-            console.log("Vaga listadas com sucesso:");
+            console.log("Vagas listadas com sucesso");
             return res.json(listJob);
 
         } catch (error: any) {
-            console.error("Erro ao listar vaga:", error.message, error.stack);
+            console.error("Erro ao listar vagas:", error.message, error.stack);
             return res.status(500).json({
                 status: "error",
                 message: error.message || "Erro interno no servidor."
