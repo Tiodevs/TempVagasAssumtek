@@ -16,27 +16,48 @@ exports.CreateJobApplicationService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
 class CreateJobApplicationService {
     execute(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ candidate_id, job_id }) {
+        return __awaiter(this, arguments, void 0, function* ({ id, job_id }) {
             try {
                 // Validação de campos
-                if (!candidate_id) {
-                    throw new Error("candidate_id não informado");
+                if (!id) {
+                    throw new Error("id não informado");
                 }
                 if (!job_id) {
                     throw new Error("job_id não informado");
                 }
+                // Verifica se o usuário existe e é um candidato
+                const user = yield prisma_1.default.user.findUnique({
+                    where: {
+                        id,
+                        type: 'candidate',
+                        is_active: true
+                    }
+                });
+                if (!user) {
+                    throw new Error("Usuário não encontrado ou não é um candidato ativo");
+                }
+                // Verifica se a vaga existe
+                const jobOffer = yield prisma_1.default.jobOffer.findUnique({
+                    where: {
+                        id: job_id,
+                        is_active: true
+                    }
+                });
+                if (!jobOffer) {
+                    throw new Error("Vaga não encontrada ou não está ativa");
+                }
                 // Cria o job application
                 const jobApplication = yield prisma_1.default.jobApplication.create({
                     data: {
-                        candidate_id,
+                        candidate_id: id,
                         job_id,
                     }
                 });
                 return jobApplication;
             }
             catch (error) {
-                console.error("Erro ao criar job application:", error.message);
-                throw new Error(error.message || "Erro interno ao criar o job application");
+                console.error("Erro ao criar candidatura:", error.message);
+                throw new Error(error.message || "Erro interno ao criar a candidatura");
             }
         });
     }

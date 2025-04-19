@@ -16,64 +16,71 @@ exports.CreateProfileService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
 class CreateProfileService {
     execute(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ candidate_id, summary, skills, experience, education, languages, linkedin, github, imported_from }) {
+        return __awaiter(this, arguments, void 0, function* ({ id, summary, skills, experience, education, languages, linkedin, github, imported_from }) {
             try {
                 // Validação de campos
-                if (!candidate_id) {
-                    throw new Error("candidate_id não informado");
+                if (!id) {
+                    throw new Error("id não informado");
                 }
-                if (!summary) {
-                    throw new Error("summary não informado");
-                }
-                if (!skills) {
-                    throw new Error("skills não informada");
-                }
-                if (!experience) {
-                    throw new Error("experience não informado");
-                }
-                if (!education) {
-                    throw new Error("education não informada");
-                }
+                // Validações essenciais, tornando os outros campos opcionais
                 if (!languages) {
                     throw new Error("languages não informado");
                 }
-                if (!linkedin) {
-                    throw new Error("linkedin não informado");
+                // Verifica se o usuário existe
+                const userExists = yield prisma_1.default.user.findUnique({
+                    where: {
+                        id: id
+                    }
+                });
+                if (!userExists) {
+                    throw new Error("Usuário não encontrado");
                 }
-                if (!github) {
-                    throw new Error("github não informado");
-                }
-                if (!imported_from) {
-                    throw new Error("imported_from não informado");
-                }
-                // Verifica se já existe o use com o email
+                // Verifica se já existe perfil para este usuário
                 const profileExists = yield prisma_1.default.candidateProfile.findFirst({
                     where: {
-                        candidate_id: candidate_id
+                        userId: id
                     }
                 });
                 if (profileExists) {
-                    throw new Error("Profile já criado");
+                    throw new Error("Perfil já criado para este usuário");
                 }
-                // Cria o user
-                const profile = yield prisma_1.default.candidateProfile.create({
-                    data: {
-                        candidate_id,
-                        summary,
-                        skills,
-                        experience,
-                        education,
-                        languages,
-                        linkedin,
-                        github,
-                        imported_from
+                // Cria o perfil do candidato com transação para garantir a criação de habilidades
+                const result = yield prisma_1.default.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    // Cria o perfil
+                    const profile = yield tx.candidateProfile.create({
+                        data: {
+                            userId: id,
+                            summary,
+                            experience,
+                            education,
+                            languages,
+                            linkedin,
+                            github,
+                            imported_from,
+                        }
+                    });
+                    // Se houver habilidades, cria cada uma delas
+                    if (skills && skills.length > 0) {
+                        for (const skill of skills) {
+                            yield tx.skill.create({
+                                data: {
+                                    name: skill.name,
+                                    candidateProfileId: profile.id
+                                }
+                            });
+                        }
                     }
-                });
-                return profile;
+                    // Retorna o perfil com as habilidades criadas
+                    return yield tx.candidateProfile.findUnique({
+                        where: { id: profile.id },
+                        include: { skills: true }
+                    });
+                }));
+                return result;
             }
             catch (error) {
-                console.error("Erro ao criar candidato:", error.message);
-                throw new Error(error.message || "Erro interno ao criar o candidato");
+                console.error("Erro ao criar perfil de candidato:", error.message);
+                throw new Error(error.message || "Erro interno ao criar o perfil de candidato");
             }
         });
     }

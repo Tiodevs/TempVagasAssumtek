@@ -10,11 +10,6 @@ interface EditReq {
 class EditUserService {
   async execute({userId, name, email, phone}: EditReq) {
     try {
-      // Validação
-      if (!userId || !email || !name) {
-        throw new Error("Dados insuficientes para atualização");
-      }
-
       // Verifica se o usuário existe
       const user = await prismaClient.user.findUnique({
         where: { id: userId },
@@ -39,7 +34,13 @@ class EditUserService {
           name: true,
           email: true,
           phone: true,
-          type: true
+          type: true,
+          profile_picture: true,
+          is_active: true,
+          created_at: true,
+          updated_at: true,
+          createdBy: true,
+          updatedBy: true
         }
       });
 

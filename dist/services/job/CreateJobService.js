@@ -16,7 +16,7 @@ exports.CreateJobService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
 class CreateJobService {
     execute(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ title, description, requirements, location, department }) {
+        return __awaiter(this, arguments, void 0, function* ({ title, description, requirements, location, department, createdBy }) {
             try {
                 // Validação de campos
                 if (!title) {
@@ -34,21 +34,26 @@ class CreateJobService {
                 if (!department) {
                     throw new Error("department não informada");
                 }
-                // Cria o user
+                if (!createdBy) {
+                    throw new Error("createdBy não informado");
+                }
+                // Cria a vaga
                 const job = yield prisma_1.default.jobOffer.create({
                     data: {
                         title,
                         description,
                         requirements,
                         location,
-                        department
+                        department,
+                        createdBy,
+                        is_active: true
                     }
                 });
                 return job;
             }
             catch (error) {
-                console.error("Erro ao criar job:", error.message);
-                throw new Error(error.message || "Erro interno ao criar o candidato");
+                console.error("Erro ao criar vaga:", error.message);
+                throw new Error(error.message || "Erro interno ao criar a vaga");
             }
         });
     }

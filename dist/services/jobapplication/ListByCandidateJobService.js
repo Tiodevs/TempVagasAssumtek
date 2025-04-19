@@ -16,23 +16,50 @@ exports.ListByCandidateJobService = void 0;
 const prisma_1 = __importDefault(require("../../prisma"));
 class ListByCandidateJobService {
     execute(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ candidateid }) {
+        return __awaiter(this, arguments, void 0, function* ({ id }) {
             try {
                 // Validação de campos
-                if (!candidateid) {
-                    throw new Error("candidateid não informado");
+                if (!id) {
+                    throw new Error("id não informado");
                 }
-                // Pegar candidayuras dos pcandidatos
-                const listJobCandidate = yield prisma_1.default.jobApplication.findMany({
+                // Verifica se o usuário existe
+                const user = yield prisma_1.default.user.findUnique({
                     where: {
-                        candidate_id: candidateid
+                        id,
+                        is_active: true
                     }
                 });
-                return listJobCandidate;
+                if (!user) {
+                    throw new Error("Usuário não encontrado ou não está ativo");
+                }
+                // Buscar candidaturas do usuário com detalhes das vagas
+                const listJobApplications = yield prisma_1.default.jobApplication.findMany({
+                    where: {
+                        candidate_id: id
+                    },
+                    include: {
+                        job_offer: {
+                            select: {
+                                id: true,
+                                title: true,
+                                description: true,
+                                requirements: true,
+                                location: true,
+                                department: true,
+                                created_at: true,
+                                is_active: true
+                            }
+                        }
+                    },
+                    orderBy: {
+                        applied_at: "desc"
+                    }
+                });
+                return listJobApplications;
             }
             catch (error) {
-                console.error("Erro ao Pegar vagas do candidado:", error.message);
-                throw new Error(error.message || "Erro interno ao Pegar vagas do candidado");
+                console.error("Erro ao buscar candidaturas do usuário:", error.message);
+                throw new Error(error.message || "Erro interno ao buscar candidaturas do usuário");
             }
         });
     }

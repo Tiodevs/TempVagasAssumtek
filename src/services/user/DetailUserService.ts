@@ -21,15 +21,9 @@ class DetailUserService {
           profile_picture: true,
           is_active: true,
           created_at: true,
-          candidateProfile: {
-            select: {
-              id: true,
-              summary: true,
-              linkedin: true,
-              github: true,
-              skills: true
-            }
-          }
+          updated_at: true,
+          createdBy: true,
+          updatedBy: true
         }
       });
 

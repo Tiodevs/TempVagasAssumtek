@@ -4,27 +4,21 @@ exports.router = void 0;
 const express_1 = require("express");
 // Middlewares
 const isAuthenticated_1 = require("./middlewares/isAuthenticated");
+const checkUserType_1 = require("./middlewares/checkUserType");
+const validation_1 = require("./middlewares/validation");
 // Controllers
-// User
-const CreateCandidateController_1 = require("./controllers/user/CreateCandidateController");
-const AuthCandidateController_1 = require("./controllers/user/AuthCandidateController");
-const DetailCandidateController_1 = require("./controllers/user/DetailCandidateController");
-const EditCandidateController_1 = require("./controllers/user/EditCandidateController");
-const DeleteCandidateController_1 = require("./controllers/user/DeleteCandidateController");
-// Profile
-const CreateProfileController_1 = require("./controllers/profile/CreateProfileController");
+// Auth
+const userController_1 = require("./controllers/userController");
+// ProfileUser
+const profileContoller_1 = require("./controllers/profileContoller");
+// Aplicações de vagas
+const jobapplicationController_1 = require("./controllers/jobapplicationController");
 // Vagas
-const CreateJobController_1 = require("./controllers/job/CreateJobController");
-const ListJobController_1 = require("./controllers/job/ListJobController");
-// Candidaturas
-const CreateJobApplicationController_1 = require("./controllers/jobapplication/CreateJobApplicationController");
-const ListBycandidateJobController_1 = require("./controllers/jobapplication/ListBycandidateJobController");
-// Adiministração
-const ListAllCandidadeController_1 = require("./controllers/adm/ListAllCandidadeController");
-const DetalisCandidateController_1 = require("./controllers/adm/DetalisCandidateController");
+const jobController_1 = require("./controllers/jobController");
+// ADM e dashboard
+const admController_1 = require("./controllers/admController");
 const router = (0, express_1.Router)();
 exports.router = router;
-// Para exibição do front :D
 router.get('/', (req, res) => {
     return res.send(`
     <h1 style='font-family: sans-serif'>
@@ -32,52 +26,30 @@ router.get('/', (req, res) => {
     <h1>
   `);
 });
-// AUTH CANDIDATE //
-// Cria um novo usuario
-router.post('/auth/register', new CreateCandidateController_1.CreateCandidateController().handle);
-// Faz a altenticação de login do usuario
-router.post('/auth/login', new AuthCandidateController_1.AuthCandidateController().handle);
-// Pega os detalhes do usuario logado pelo JWT
-router.get('/auth/me', isAuthenticated_1.isAuthenticated, new DetailCandidateController_1.DetailCandidateController().handle);
-// Edita o usuario por id dele
-router.put('/auth/editbyid', isAuthenticated_1.isAuthenticated, new EditCandidateController_1.EditCandidateController().handle);
-// ADIMINISTRADOR //
-// Deixa o usuario desativado pegando por id do candidato
-router.put('/candidates/deletebyid', isAuthenticated_1.isAuthenticated, new DeleteCandidateController_1.DeleteCandidateController().handle);
-// Pega todos os candidatos
-router.get('/candidates/allcandidate', isAuthenticated_1.isAuthenticated, new ListAllCandidadeController_1.ListAllCandidadeController().handle);
-// Pega detalhes do candidato por id
-router.get('/candidates/detailsbyid', isAuthenticated_1.isAuthenticated, new DetalisCandidateController_1.DetalisByIdCandidateController().handle);
+// AUTH USER //
+router.post('/auth/signup', (0, validation_1.validate)(validation_1.schemas.createUser), new userController_1.CreateUserController().handle); // Cria um novo usuario
+router.post('/auth/login', (0, validation_1.validate)(validation_1.schemas.auth), new userController_1.AuthUserController().handle); // Faz a autenticação de login do usuario
+router.get('/auth/me', isAuthenticated_1.isAuthenticated, new userController_1.DetailUserController().handle); // Pega os detalhes do usuario logado
+router.put('/auth/me/update', isAuthenticated_1.isAuthenticated, (0, validation_1.validate)(validation_1.schemas.editUser), new userController_1.EditUserController().handle); // Edita o usuario autenticado
+// ADM // 
+router.put('/admin/users/deactivate/:id', isAuthenticated_1.isAuthenticated, checkUserType_1.isAdmin, (0, validation_1.validateParams)(validation_1.schemas.admDesctiveUser), new userController_1.DeleteUserController().handle); // Desativa o usuário por id
+router.get('/admin/users/list', isAuthenticated_1.isAuthenticated, checkUserType_1.isAdmin, new admController_1.ListAllCandidateController().handle); // Lista todos os candidatos
+router.get('/admin/users/:id', isAuthenticated_1.isAuthenticated, checkUserType_1.isAdmin, (0, validation_1.validateParams)(validation_1.schemas.admDetailsUser), new admController_1.DetailsByIdUserController().handle); // Detalhes de um usuário por id
 // CANDIDATE PROFILE //
-// Cria um novo profile do user
-router.post('/candidatesprofile/register', isAuthenticated_1.isAuthenticated, new CreateProfileController_1.CreateProfileController().handle);
-// Editar um profile por id
-router.post('/candidatesprofile/editbyid', isAuthenticated_1.isAuthenticated, () => { });
-// Lista todos os perfis dos candidatos
-router.post('/candidatesprofile/listall', isAuthenticated_1.isAuthenticated, () => { });
-// Lista o perfil do candidato por id
-router.post('/candidatesprofile/listbyid', isAuthenticated_1.isAuthenticated, () => { });
-// Gera um CV como PDF coms as informações do perfil
-router.post('/candidatesprofile/pdf ', isAuthenticated_1.isAuthenticated, () => { });
-// Pega as informações do PDF do CV antigo e coloca no perfil
-router.post('/candidatesprofile/import/pdf ', isAuthenticated_1.isAuthenticated, () => { });
-// Pega as informações do LinkedIn do user
-router.post('/candidatesprofile/import/linkedin  ', isAuthenticated_1.isAuthenticated, () => { });
+router.post('/profile/candidate/create/:id', isAuthenticated_1.isAuthenticated, (0, validation_1.validate)(validation_1.schemas.createCandidateProfile), new profileContoller_1.CreateProfileController().handle); // Cria um novo perfil do user
+router.post('/profile/candidate/update/:id', isAuthenticated_1.isAuthenticated, () => { }); // Editar um perfil por id
+router.post('/profile/candidate/me', isAuthenticated_1.isAuthenticated, () => { }); // Pega o perfil de um candidato por JWT
+// GERAR E IMPORTAR PDF //
+router.post('/profile/candidate/pdf/me', isAuthenticated_1.isAuthenticated, () => { }); // Gera CV em PDF
+router.post('/profile/import/pdf', isAuthenticated_1.isAuthenticated, () => { }); // Importa CV em PDF
+router.post('/profile/import/linkedin', isAuthenticated_1.isAuthenticated, () => { }); // Importa LinkedIn
 // VAGAS //
-// Cria uma nova vaga 
-router.post('/job/register', isAuthenticated_1.isAuthenticated, new CreateJobController_1.CreateJobController().handle);
-// Lista todas as vagas
-router.get('/job/listall', isAuthenticated_1.isAuthenticated, new ListJobController_1.ListJobController().handle);
-// Pegar detalhes de uma vaga por id
-router.get('/job/detailsbyid', isAuthenticated_1.isAuthenticated, new DetailCandidateController_1.DetailCandidateController().handle);
-// Deleta uma vaga por id
-router.delete('/job/deletbyid', isAuthenticated_1.isAuthenticated, () => { });
-// Editar um vaga por id
-router.put('/job/editbyid', isAuthenticated_1.isAuthenticated, () => { });
+router.post('/jobs/create', isAuthenticated_1.isAuthenticated, checkUserType_1.isCompanyOrAdmin, (0, validation_1.validate)(validation_1.schemas.createJob), new jobController_1.CreateJobController().handle); // Cria uma nova vaga
+router.get('/jobs/list', isAuthenticated_1.isAuthenticated, new jobController_1.ListJobController().handle); // Lista todas as vagas
+router.get('/jobs/list/:id', isAuthenticated_1.isAuthenticated, new userController_1.DetailUserController().handle); // Detalhes de uma vaga por id
+router.delete('/jobs/delete/:id', isAuthenticated_1.isAuthenticated, checkUserType_1.isCompanyOrAdmin, () => { }); // Deleta uma vaga
+router.put('/jobs/update/:id', isAuthenticated_1.isAuthenticated, checkUserType_1.isCompanyOrAdmin, (0, validation_1.validate)(validation_1.schemas.createJob), () => { }); // Editar uma vaga
 // CADIDATURAS //
-// Cria uma nova cadidatura 
-router.post('/jobapplication/register', isAuthenticated_1.isAuthenticated, new CreateJobApplicationController_1.CreateJobApplicationController().handle);
-// Lista candidaturas do user
-router.get('/jobapplication/list', isAuthenticated_1.isAuthenticated, new ListBycandidateJobController_1.ListBycandidateJobController().handle);
-// Deleta uma cadidatura por id
-router.post('/jobapplication/deletbyid', isAuthenticated_1.isAuthenticated, () => { });
+router.post('/applications/create/:id', isAuthenticated_1.isAuthenticated, checkUserType_1.isCandidate, (0, validation_1.validate)(validation_1.schemas.createJobApplications), new jobapplicationController_1.CreateJobApplicationController().handle); // Cria uma nova candidatura
+router.get('/applications/list/:id', isAuthenticated_1.isAuthenticated, (0, validation_1.validateParams)(validation_1.schemas.detailsJobApplications), new jobapplicationController_1.ListBycandidateJobController().handle); // Lista candidaturas do usuário
+router.post('/applications/delete/:id', isAuthenticated_1.isAuthenticated, checkUserType_1.isCandidate, () => { }); // Deleta uma candidatura

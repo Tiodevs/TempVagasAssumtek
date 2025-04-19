@@ -10,16 +10,6 @@ interface AuthRequest {
 class AuthUserService {
   async execute({ email, password }: AuthRequest) {
     try {
-      // Verifica se o email está preenchido
-      if (!email) {
-        throw new Error("Email não informado!");
-      }
-
-      // Verifica se a senha está preenchida
-      if (!password) {
-        throw new Error("Senha não informada!");
-      }
-
       // Verifica se o usuário existe
       const user = await prismaClient.user.findFirst({
         where: {
@@ -44,7 +34,7 @@ class AuthUserService {
         {
           name: user.name,
           email: user.email,
-          type: user.type
+          type: user.type,    
         },
         process.env.JWT_SECRET as string,
         {

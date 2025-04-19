@@ -4,6 +4,7 @@ import { DetailUserService } from "../services/user/DetailUserService";
 import { DeleteUserService } from "../services/user/DeleteUserService";
 import { AuthUserService } from "../services/user/AuthUserService";
 import { CreateUserService } from "../services/user/CreateUserService";
+import * as yup from 'yup'
 
 export class EditUserController {
     async handle(req: Request, res: Response) {
@@ -85,6 +86,7 @@ export class CreateUserController {
 
         } catch (error: any) {
             console.error("Erro ao criar usuário:", error.message, error.stack);
+            
             return res.status(500).json({
                 status: "error",
                 message: error.message || "Erro interno no servidor."

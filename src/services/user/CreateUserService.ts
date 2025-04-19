@@ -14,32 +14,6 @@ class CreateUserService {
   async execute({ name, email, password, phone, type, createdBy }: UserRequest) {
 
     try {
-      // Validação de campos
-      if (!name) {
-        throw new Error("Nome incorreto");
-      }
-      if (!email) {
-        throw new Error("Email não informado");
-      }
-      if (!password) {
-        throw new Error("Senha não informada");
-      }
-      if (!phone) {
-        throw new Error("Número não informado");
-      }
-      if (!type) {
-        throw new Error("Tipo de usuário não informado");
-      }
-      if (!createdBy) {
-        throw new Error("Campo createdBy não informado");
-      }
-
-      // Expressão regular que verifica se é email
-      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (!email || !emailRegex.test(email)) {
-        throw new Error("Email inválido");
-      }
-
       // Verifica se já existe o usuário com o email
       const userExists = await prismaClient.user.findFirst({
         where: {
@@ -66,10 +40,17 @@ class CreateUserService {
           createdBy
         },
         select: {
+          id: true,
           name: true,
           email: true,
-          id: true,
-          type: true
+          phone: true,
+          type: true,
+          profile_picture: true,
+          is_active: true,
+          created_at: true,
+          updated_at: true,
+          createdBy: true,
+          updatedBy: true
         }
       })
 
